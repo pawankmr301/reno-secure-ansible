@@ -1,0 +1,5 @@
+---
+- name: Starting Zookeeper
+  shell: "{{SoftwareStopStart[SoftwareName]['StartScript']}}"
+  args:
+   chdir: "{{SoftwareStopStart[SoftwareName]['BinDir']}}"

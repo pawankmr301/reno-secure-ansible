@@ -1,0 +1,31 @@
+---
+## Stop old zookeeper, kafka & hazelcast ##
+- name: Finding process IDs of Zookeeper, Kafka and Hazelcast processes
+  shell: psOutput=`ps -ef | grep java | grep -i -e zookeeper -e kafka -e hazelcast | grep -e 'Softwares/ZooKeeper' -e 'Softwares/Kafka' -e com.hazelcast.core.server.StartServer | grep -v grep | awk '{print $2}'` \
+         && echo $psOutput 
+  register: psOutput
+  failed_when: false
+
+- name: Stopping currently running Zookeeper, Kafka and Hazelcast processes
+  shell: kill -9 {{ psOutput.stdout }}
+  when: psOutput.stdout != ""
+  register: killOutput
+
+- name: "Process IDs of killed processes"
+  debug:
+   msg: "Processes of Zookeeper, Kafka and Hazelcast with PIDs '{{ psOutput.stdout }}' have been killed..."
+  when: killOutput.rc is defined
+
+- name: "Finding temporary log directories created by Kafka"
+  find:
+   paths: "/tmp/"
+   patterns: "kafka-logs*"
+   file_type: directory
+  register: find_result
+
+- name: "Removing temporary log directories created by Kafka"
+  file:
+    path: "{{ item['path'] }}"
+    state: absent
+  with_items: "{{ find_result['files'] }}"
+

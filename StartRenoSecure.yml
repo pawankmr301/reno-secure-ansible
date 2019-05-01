@@ -1,0 +1,96 @@
+---
+- name: Playbook for In-memory inventory creation
+  hosts: localhost
+  gather_facts: false
+  vars:
+   ip_addr: localhost
+  tasks:
+   - name: Adding a host in in-memory inventory
+     add_host:
+      name: "{{ ip_addr }}"
+      group: inmemory
+      ansible_ssh_host: "{{ ip_addr }}"
+      ansible_ssh_user: jenkins
+
+- name: RenoSecure installation Playbook
+  hosts: inmemory
+  gather_facts: false
+################################# Globle Variables Section ##########################################
+  vars:
+   ZooKeeperSoftDir: "{{ playbook_dir }}/Softwares/ZooKeeper"
+   KafkaSoftDir: "{{ playbook_dir }}/Softwares/Kafka"
+   HazelCastSoftDir: "{{ playbook_dir }}/Softwares/HazelCast"
+   Artifactory_URL: "http://172.16.23.28:8081/artifactory"
+   ZooKeeperArtifacory: "{{Artifactory_URL}}/Tools/zookeeper-3.5.2-alpha.zip"
+   KafkaArtifactory: "{{Artifactory_URL}}/Tools/kafka_2.11-1.0.1.zip"
+   HazelCastArtifactory: "{{Artifactory_URL}}/Tools/hazelcast-3.9.2.zip"
+####################################################################################
+# Used in variables ArtifactorySoftwareLoc, SoftwareStopStart
+   SoftwareName:
+   - ZooKeeper
+   - Kafka
+   - HazelCast
+####################################################################################
+## Used in role RenoSecureDownloadSupportingSoftware
+   ArtifactorySoftwareLoc:
+    ZooKeeper:
+     source: "{{ZooKeeperArtifacory}}"
+     destination: "{{ZooKeeperSoftDir}}/"
+    Kafka:
+     source: "{{KafkaArtifactory}}"
+     destination: "{{KafkaSoftDir}}/"
+    HazelCast:
+     source: "{{HazelCastArtifactory}}"
+     destination: "{{HazelCastSoftDir}}/"
+####################################################################################
+# Used in role RenoSecureCleanDirectories, RenoSecureCreateDirectories
+   UnzippedDirs:
+   - "{{ZooKeeperSoftDir}}"
+   - "{{KafkaSoftDir}}"
+   - "{{HazelCastSoftDir}}"
+####################################################################################
+# Used in role RenoSecureStartZooKeeper
+   SoftwareStopStart:
+    ZooKeeper:
+     BinDir: "{{ZooKeeperSoftDir}}/bin"
+     LogDir: "{{ZooKeeperSoftDir}}/logs"
+     StopScript: "./zkServer.sh stop"
+     StartScript: "./zkServer.sh start"
+     LogFile: "zookeeper-jenkins-server-localhost.localdomain.out"
+    Kafka:
+     BinDir: "{{KafkaSoftDir}}/bin"
+     LogDir: "{{KafkaSoftDir}}/logs"
+     StopScript: "./kafka-server-stop.sh"
+     StartScript: "./kafka-server-start.sh"
+    HazelCast:
+     BinDir: "{{HazelCastSoftDir}}/bin"
+     StopScript: "./stop.sh"
+     StartScript: "nohup ./start.sh >{{HazelCastSoftDir}}/bin/Hazelcast_startup.log 2>&1 &"
+####################################################################################
+# Used in role RenoSecureStartKafka
+   KafkaCount: 1
+#####################################################################################################
+
+
+
+  tasks:
+  - name: "Role: RenoSecureKillProcesses"
+    include_role: name=RenoSecureKillProcesses
+  - name: "Role: RenoSecureCleanDirectories"
+    include_role: name=RenoSecureCleanDirectories
+  - name: "Role: RenoSecureCreateDirectories"
+    include_role: name=RenoSecureCreateDirectories
+  - name: "Role: RenoSecureDownloadSupportingSoftware"
+    include_role: name=RenoSecureDownloadSupportingSoftware
+  - name: "Role: RenoSecureStartZooKeeper"
+    include_role: name=RenoSecureStartZooKeeper
+    vars:
+     SoftwareName: ZooKeeper
+  - name: "Role: RenoSecureStartKafka"
+    include_role: name=RenoSecureStartKafka
+    vars:
+     SoftwareName: Kafka
+  - name: "Role: RenoSecureStartHazelCast"
+    include_role: name=RenoSecureStartHazelCast
+    vars:
+     SoftwareName: HazelCast

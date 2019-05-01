@@ -1,0 +1,5 @@
+---
+- name: Starting HazelCast
+  shell: "{{SoftwareStopStart[SoftwareName]['StartScript']}}"
+  args:
+   chdir: "{{SoftwareStopStart[SoftwareName]['BinDir']}}"

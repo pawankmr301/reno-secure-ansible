@@ -1,0 +1,14 @@
+---
+- name: "Checking whether ports 8080 and 2181 are free to use by Zookeeper"
+  shell: netstat -tlnp | grep -e 8080 -e 2181
+  register: zookeeperPortsOutput
+  failed_when: false
+  become: true
+
+- name: "Exiting if ports 8080 or 2181 is not free"
+  fail: msg="Ports (8080 or 2181) are not free to start Zookeeper"
+  when: zookeeperPortsOutput.rc == 0
+
+- name: "Starting Zookeeper"
+  import_tasks: startZooKeeper.yml
+  when: zookeeperPortsOutput.rc != 0

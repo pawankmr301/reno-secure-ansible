@@ -1,0 +1,11 @@
+---
+## Cleaning Software directories
+- name: "Cleaning Software directories <<See item>>"
+  file:
+   state: absent
+   path: "{{ item }}"
+   owner: jenkins
+   group: jenkins
+   mode: 0750
+  with_items: "{{ UnzippedDirs }}"
+  become: true

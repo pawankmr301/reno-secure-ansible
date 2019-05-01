@@ -1,0 +1,5 @@
+---
+- name: Creating necessary directories, if not present
+  file: state=directory mode=0775 owner=jenkins group=jenkins path={{ item }}
+  with_items: "{{ UnzippedDirs }}"
+  become: true

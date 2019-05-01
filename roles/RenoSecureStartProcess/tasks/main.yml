@@ -1,0 +1,5 @@
+---
+- name: Starting process <<See Item>>
+  shell: "{{SoftwareStopStart[SoftwareName]['StartScript']}}"
+  args:
+   chdir: "{{SoftwareStopStart[SoftwareName]['BinDir']}}"

@@ -1,0 +1,15 @@
+#!/bin/bash
+j=`echo {{item}} - 1 | bc`
+for i in `eval echo {$j..100}`
+do
+        Offset=9092
+        CheckPort=`echo $Offset + $i | bc`
+        netstat -tlnp | grep $CheckPort > /dev/null
+        if test $? -eq 0
+        then
+                continue
+        else
+                echo $CheckPort
+                break
+        fi
+done

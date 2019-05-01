@@ -1,0 +1,11 @@
+---
+- name: "Downloading and extracting software << See item >>"
+  unarchive:
+   src: "{{ ArtifactorySoftwareLoc[ item ]['source'] }}"
+   dest: "{{ ArtifactorySoftwareLoc[ item ]['destination'] }}"
+   owner: jenkins
+   group: jenkins
+   mode: 0750
+   remote_src: true
+  with_items: "{{ SoftwareName }}"
+  register: DownloadSupportingSoftwareResult
